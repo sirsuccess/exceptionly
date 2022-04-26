@@ -1,0 +1,16 @@
+@import "../../styles/MediaQueries.scss";
+.auth {
+  background-image: url("../../assets/images/bg.png");
+  background-repeat: no-repeat;
+  background-size: cover;
+  min-width: 100vw;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  @include phoneWidth {
+    background-image: none;
+    background-color: #fff;
+    align-items: flex-start;
+  }
+}

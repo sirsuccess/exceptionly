@@ -1,0 +1,55 @@
+@import "../../styles/MediaQueries.scss";
+@keyframes move {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 5%, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+.login-form {
+  padding: 0 50px;
+  height: 450px;
+  animation: move 1s ease-out;
+  .input-control {
+    height: 80px;
+  }
+  @include phoneWidth {
+    height: 100%;
+  }
+  @include phoneXSWidth {
+    padding: 20px;
+  }
+  .remindme {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 14px;
+    line-height: 20px;
+    letter-spacing: 0.25px;
+    margin-bottom: 20px;
+    .forgot {
+      color: #4285f4;
+      cursor: pointer;
+    }
+  }
+
+  button {
+    margin-bottom: 1.5em;
+    background: #4285f4;
+    cursor: pointer;
+    &:nth-child(2) {
+      background: #2867b2;
+    }
+    &:nth-child(3) {
+      background: #f25022;
+    }
+  }
+  .or {
+    margin-bottom: 1.5em;
+    text-align: center;
+  }
+}

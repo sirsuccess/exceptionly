@@ -1,0 +1,25 @@
+@mixin phoneWidth {
+  @media screen and (max-width: 480px) {
+    @content;
+  }
+}
+@mixin phoneXSWidth {
+  @media screen and (max-width: 400px) {
+    @content;
+  }
+}
+@mixin tabletWidth {
+  @media screen and (max-width: 850px) {
+    @content;
+  }
+}
+@mixin phoneHeight {
+  @media screen and (max-height: 480px) {
+    @content;
+  }
+}
+@mixin tabletHeight {
+  @media screen and (max-height: 900px) {
+    @content;
+  }
+}
