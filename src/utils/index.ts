@@ -28,22 +28,13 @@ export default function fireBaseAuth(isGoogle: boolean) {
         icon: "success",
         confirmButtonText: "Close",
       });
-      // ...
     })
     .catch((error) => {
-      // Handle Errors here.
-      const errorCode = error.code;
-      const errorMessage = error.message;
-      // The email of the user's account used.
-      const email = error.email;
-      // The AuthCredential type that was used.
-      const credential = GoogleAuthProvider.credentialFromError(error);
       Swal.fire({
         title: "Error!",
-        text: "Something when wrong",
+        text: "Something when wrong, try again",
         icon: "error",
         confirmButtonText: "Close",
       });
-      // ...
     });
 }

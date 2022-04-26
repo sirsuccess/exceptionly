@@ -2,7 +2,7 @@
 @keyframes move {
   from {
     opacity: 0;
-    transform: translate3d(0, 5%, 0);
+    transform: translate3d(0, 2%, 0);
   }
   to {
     opacity: 1;
@@ -24,8 +24,8 @@
 .signup-form {
   padding: 0 50px;
   height: 650px;
-  animation: move 1s ease-out;
-  // transition: all 0.25s ease-out;
+  animation: move .5s ease-out;
+
 
   .input-control {
     height: 80px;

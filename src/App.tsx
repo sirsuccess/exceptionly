@@ -12,7 +12,7 @@ function App() {
   };
 
   // Initialize Firebase
-  const app = initializeApp(firebaseConfig);
+  initializeApp(firebaseConfig);
 
   return (
     <div className="App">

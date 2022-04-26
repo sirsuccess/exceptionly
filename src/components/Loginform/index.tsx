@@ -1,5 +1,6 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
 import { useState } from "react";
+import Swal from "sweetalert2";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import "./styles.scss";
@@ -7,6 +8,8 @@ import Google from "../../assets/icons/📍google-icon.png";
 import Linkedin from "../../assets/icons/📍linkedIn-icon.png";
 import Microsoft from "../../assets/icons/📍microsoft-icon.png";
 import fireBaseAuth from "../../utils/index";
+import endpoints from "../../api/endpoint";
+import { postCall } from "../../api/request";
 
 type AppProps = {
   showLogin: boolean;
@@ -46,6 +49,7 @@ function LoginForm({ showLogin }: AppProps) {
   const handleError = (e: any) => {
     const { name, value } = e.target;
     if (name === "email") {
+      /* eslint-disable no-useless-escape */
       const match = value.match(
         /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
       );
@@ -66,8 +70,39 @@ function LoginForm({ showLogin }: AppProps) {
     }
   };
 
+  const handleSumit = (e: any) => {
+    e.preventDefault();
+    postCall(endpoints.login, useData, {})
+      .then((res) => {
+        console.log({ res });
+        if (res.data) {
+          Swal.fire({
+            title: "Success!",
+            text: `Hi, you have successfully sign-in`,
+            icon: "success",
+            confirmButtonText: "Close",
+          });
+        } else {
+          Swal.fire({
+            title: "Oops!",
+            text: "Something when wrong, try again",
+            icon: "error",
+            confirmButtonText: "Close",
+          });
+        }
+      })
+      .catch((err) => {
+        Swal.fire({
+          title: "Oops!",
+          text: "Something when wrong",
+          icon: "error",
+          confirmButtonText: "Close",
+        });
+      });
+  };
+
   return (
-    <form className={showLogin ? "login-form" : ""}>
+    <form className={showLogin ? "login-form" : ""} onSubmit={handleSumit}>
       <div className="input-control">
         <TextField
           error={showErrorMessage.email}
@@ -113,7 +148,7 @@ function LoginForm({ showLogin }: AppProps) {
         </div>
         {/* <Link to="/about" className="forgot">Forgot Password?</Link> */}
 
-        <a className="forgot">Forgot Password?</a>
+        <a href="#" className="forgot">Forgot Password?</a>
       </div>
 
       <Button variant="contained" fullWidth type="submit">

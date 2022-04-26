@@ -1,4 +1,6 @@
+/* eslint-disable jsx-a11y/anchor-is-valid */
 import { useState } from "react";
+import Swal from "sweetalert2";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import "./styles.scss";
@@ -6,6 +8,8 @@ import Google from "../../assets/icons/📍google-icon.png";
 import Linkedin from "../../assets/icons/📍linkedIn-icon.png";
 import Microsoft from "../../assets/icons/📍microsoft-icon.png";
 import fireBaseAuth from "../../utils/index";
+import endpoints from "../../api/endpoint";
+import { postCall } from "../../api/request";
 
 type AppProps = {
   showLogin: boolean;
@@ -65,11 +69,16 @@ function SignUp({ showLogin }: AppProps) {
       ...useData,
       [name]: value,
     });
+    setErrorMessage({
+      ...useData,
+      [name]: "",
+    });
   };
 
   const handleError = (e: any) => {
     const { name, value } = e.target;
     if (name === "email") {
+      /* eslint-disable no-useless-escape */
       const match = value.match(
         /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
       );
@@ -82,6 +91,7 @@ function SignUp({ showLogin }: AppProps) {
       return;
     }
 
+
     if (value.length < 6) {
       setShowErrorMessage({
         ...showErrorMessage,
@@ -90,8 +100,39 @@ function SignUp({ showLogin }: AppProps) {
     }
   };
 
+  const handleSumit = (e: any) => {
+    e.preventDefault();
+    postCall(endpoints.login, useData, {})
+      .then((res) => {
+        console.log({ res });
+        if (res.data) {
+          Swal.fire({
+            title: "Success!",
+            text: `Hi, you have successfully sign-in`,
+            icon: "success",
+            confirmButtonText: "Close",
+          });
+        } else {
+          Swal.fire({
+            title: "Oops!",
+            text: "Something when wrong, try again",
+            icon: "error",
+            confirmButtonText: "Close",
+          });
+        }
+      })
+      .catch((err) => {
+        Swal.fire({
+          title: "Oops!",
+          text: "Something when wrong",
+          icon: "error",
+          confirmButtonText: "Close",
+        });
+      });
+  };
+
   return (
-    <form className={!showLogin ? "signup-form" : ""}>
+    <form className={!showLogin ? "signup-form" : ""} onSubmit={handleSumit}>
       <div className="input-control">
         <TextField
           error={showErrorMessage.firstName}
@@ -195,7 +236,7 @@ function SignUp({ showLogin }: AppProps) {
           <input type="checkbox" name="accept" id="accept" />
           <label htmlFor="accept">Remember Me</label>
         </div>
-        <div className="forgot">Forgot Password?</div>
+        <a href="#" className="forgot">Forgot Password?</a>
       </div>
 
       <Button variant="contained" fullWidth type="submit">
