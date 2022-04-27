@@ -1,0 +1,25 @@
+.splash-bg{
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: rgba(0, 0, 0, 0.3);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 999;
+    img{
+        animation: leaves .5s ease-in-out infinite alternate;
+        -webkit-animation: leaves .5s ease-in-out infinite alternate;
+    }
+}
+
+@keyframes leaves {
+    0% {
+        transform: scale(1.0);
+    }
+    100% {
+        transform: scale(2.0);
+    }
+}

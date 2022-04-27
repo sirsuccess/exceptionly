@@ -5,8 +5,11 @@ import {
   OAuthProvider,
 } from "firebase/auth";
 import Swal from "sweetalert2";
+import endpoints from "../api/endpoint";
+import { postCall } from "../api/request";
 
-export default function fireBaseAuth(isGoogle: boolean) {
+export default function fireBaseAuth(isGoogle: boolean, setLoading: any) {
+  setLoading(true)
   const auth = getAuth();
   const provider = isGoogle
     ? new GoogleAuthProvider()
@@ -20,8 +23,18 @@ export default function fireBaseAuth(isGoogle: boolean) {
         : OAuthProvider.credentialFromResult(result);
       const token = credential.accessToken;
       // The signed-in user info.
-      const user = result.user;
-      console.log({ token, user, credential });
+      const user:any = result.user;
+      const [firstName, lastName] = user.displayName?.split(" ")
+      const payload = {
+        firstName: firstName,
+        lastName: lastName || firstName,
+        email: user.email,
+        password: "password",
+        service: credential.signInMethod,
+        serviceAuth: token,
+      };
+      postCall(endpoints.createUser, payload, {})
+      setLoading(false)
       Swal.fire({
         title: "Success!",
         text: `Hi ${user.displayName} you have successfully sign-in with ${user.email} using ${credential.signInMethod}`,
@@ -30,6 +43,7 @@ export default function fireBaseAuth(isGoogle: boolean) {
       });
     })
     .catch((error) => {
+      setLoading(false)
       Swal.fire({
         title: "Error!",
         text: "Something when wrong, try again",

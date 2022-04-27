@@ -10,6 +10,7 @@ import Microsoft from "../../assets/icons/📍microsoft-icon.png";
 import fireBaseAuth from "../../utils/index";
 import endpoints from "../../api/endpoint";
 import { postCall } from "../../api/request";
+import LoadingScreen from "../LoaadingScreen";
 
 type AppProps = {
   showLogin: boolean;
@@ -33,6 +34,8 @@ function LoginForm({ showLogin }: AppProps) {
     email: false,
     password: false,
   });
+
+  const [loading, setLoading] = useState<boolean>(false);
 
   const handleOnchange = (e: any) => {
     const { name, value } = e.target;
@@ -72,26 +75,44 @@ function LoginForm({ showLogin }: AppProps) {
 
   const handleSumit = (e: any) => {
     e.preventDefault();
+    setLoading(true);
+    if (showErrorMessage.email || useData.email === "") {
+      setShowErrorMessage({
+        ...showErrorMessage,
+        email: true,
+      });
+      setLoading(false);
+      return;
+    }
+    if (showErrorMessage.password || useData.password === "") {
+      setShowErrorMessage({
+        ...showErrorMessage,
+        password: true,
+      });
+      setLoading(false);
+      return;
+    }
     postCall(endpoints.login, useData, {})
       .then((res) => {
-        console.log({ res });
-        if (res.data) {
+        setLoading(false);
+        if (res.data.status === "success") {
           Swal.fire({
             title: "Success!",
-            text: `Hi, you have successfully sign-in`,
+            text: `Hi, ${res.data.data.user.firstName} ${res.data.data.user.lastName} you have successfully sign-in`,
             icon: "success",
             confirmButtonText: "Close",
           });
         } else {
           Swal.fire({
             title: "Oops!",
-            text: "Something when wrong, try again",
+            text: `${res.data.message}`,
             icon: "error",
             confirmButtonText: "Close",
           });
         }
       })
       .catch((err) => {
+        setLoading(false);
         Swal.fire({
           title: "Oops!",
           text: "Something when wrong",
@@ -103,6 +124,7 @@ function LoginForm({ showLogin }: AppProps) {
 
   return (
     <form className={showLogin ? "login-form" : ""} onSubmit={handleSumit}>
+      {loading && <LoadingScreen />}
       <div className="input-control">
         <TextField
           error={showErrorMessage.email}
@@ -146,9 +168,9 @@ function LoginForm({ showLogin }: AppProps) {
           <input type="checkbox" name="accept" id="accept" />
           <label htmlFor="accept">Remember Me</label>
         </div>
-        {/* <Link to="/about" className="forgot">Forgot Password?</Link> */}
-
-        <a href="#" className="forgot">Forgot Password?</a>
+        <a href="#" className="forgot">
+          Forgot Password?
+        </a>
       </div>
 
       <Button variant="contained" fullWidth type="submit">
@@ -159,7 +181,7 @@ function LoginForm({ showLogin }: AppProps) {
         <Button
           variant="contained"
           fullWidth
-          onClick={() => fireBaseAuth(true)}
+          onClick={() => fireBaseAuth(true, setLoading)}
         >
           {" "}
           <img src={Google} alt="Google" className="icon" /> SIGN IN WITH GOOGLE
@@ -172,7 +194,7 @@ function LoginForm({ showLogin }: AppProps) {
           variant="contained"
           fullWidth
           color="error"
-          onClick={() => fireBaseAuth(false)}
+          onClick={() => fireBaseAuth(false, setLoading)}
         >
           {" "}
           <img src={Microsoft} alt="Google" className="icon" />

@@ -3,13 +3,14 @@ import { useState } from "react";
 import Swal from "sweetalert2";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
-import "./styles.scss";
 import Google from "../../assets/icons/📍google-icon.png";
 import Linkedin from "../../assets/icons/📍linkedIn-icon.png";
 import Microsoft from "../../assets/icons/📍microsoft-icon.png";
 import fireBaseAuth from "../../utils/index";
 import endpoints from "../../api/endpoint";
 import { postCall } from "../../api/request";
+import LoadingScreen from "../LoaadingScreen";
+import "./styles.scss";
 
 type AppProps = {
   showLogin: boolean;
@@ -33,6 +34,7 @@ type UserData = {
 };
 
 function SignUp({ showLogin }: AppProps) {
+  const [loading, setLoading] = useState<boolean>(false);
   const [useData, setUserData] = useState<UserData>({
     firstName: "",
     lastName: "",
@@ -50,13 +52,16 @@ function SignUp({ showLogin }: AppProps) {
     password: false,
     retypePassword: false,
   });
+  const errorM = {
+    firstName: "First name field can not empty",
+    lastName: "Last name field can not empty",
+    email: "Please insert a valid mail",
+    retypeEmail: "Please retype email must match email",
+    password: "Please must be at least 6 charater long",
+    retypePassword: "Please retype password must match password",
+  };
   const [errorMessage, setErrorMessage] = useState<UserData>({
-    firstName: "",
-    lastName: "",
-    email: "",
-    retypeEmail: "",
-    password: "",
-    retypePassword: "",
+    ...errorM,
   });
 
   const handleOnchange = (e: any) => {
@@ -70,8 +75,7 @@ function SignUp({ showLogin }: AppProps) {
       [name]: value,
     });
     setErrorMessage({
-      ...useData,
-      [name]: "",
+      ...errorMessage,
     });
   };
 
@@ -90,38 +94,128 @@ function SignUp({ showLogin }: AppProps) {
       }
       return;
     }
+    if (name === "retypeEmail") {
+      /* eslint-disable no-useless-escape */
+      const match = value.match(
+        /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+      );
+      if (!match || useData.email !== value) {
+        return setShowErrorMessage({
+          ...showErrorMessage,
+          [name]: true,
+        });
+      }
+      return;
+    }
 
-
-    if (value.length < 6) {
+    if (name === "password" && value.length < 6) {
       setShowErrorMessage({
         ...showErrorMessage,
         [name]: true,
       });
+      return;
+    }
+    if (
+      name === "retypePassword" &&
+      (useData.password !== value || useData.retypePassword === "")
+    ) {
+      setShowErrorMessage({
+        ...showErrorMessage,
+        [name]: true,
+      });
+      return;
     }
   };
 
   const handleSumit = (e: any) => {
     e.preventDefault();
-    postCall(endpoints.login, useData, {})
+    setLoading(true);
+    if (showErrorMessage.firstName || useData.firstName === "") {
+      setShowErrorMessage({
+        ...showErrorMessage,
+        firstName: true,
+      });
+      setLoading(false);
+      return;
+    }
+    if (showErrorMessage.lastName || useData.lastName === "") {
+      setShowErrorMessage({
+        ...showErrorMessage,
+        lastName: true,
+      });
+      setLoading(false);
+      return;
+    }
+    if (showErrorMessage.email || useData.email === "") {
+      setShowErrorMessage({
+        ...showErrorMessage,
+        email: true,
+      });
+      setLoading(false);
+      return;
+    }
+    if (
+      showErrorMessage.retypeEmail ||
+      useData.retypeEmail === "" ||
+      useData.email !== useData.retypeEmail
+    ) {
+      setShowErrorMessage({
+        ...showErrorMessage,
+        retypeEmail: true,
+      });
+      setLoading(false);
+      return;
+    }
+    if (showErrorMessage.password || useData.password === "") {
+      setShowErrorMessage({
+        ...showErrorMessage,
+        password: true,
+      });
+      setLoading(false);
+      return;
+    }
+    if (
+      showErrorMessage.retypePassword ||
+      useData.password !== useData.retypePassword ||
+      useData.retypePassword === ""
+    ) {
+      setShowErrorMessage({
+        ...showErrorMessage,
+        retypePassword: true,
+      });
+      setLoading(false);
+      return;
+    }
+
+    const payload = {
+      firstName: useData.firstName,
+      lastName: useData.lastName,
+      email: useData.email,
+      password: useData.password,
+      service: "email/password",
+      serviceAuth: "email/password",
+    };
+    postCall(endpoints.createUser, payload, {})
       .then((res) => {
-        console.log({ res });
-        if (res.data) {
+        setLoading(false);
+        if (res.data.status === "success") {
           Swal.fire({
             title: "Success!",
-            text: `Hi, you have successfully sign-in`,
+            text: `Account created successfully`,
             icon: "success",
             confirmButtonText: "Close",
           });
         } else {
           Swal.fire({
             title: "Oops!",
-            text: "Something when wrong, try again",
+            text: `${res.data.message}`,
             icon: "error",
             confirmButtonText: "Close",
           });
         }
       })
       .catch((err) => {
+        setLoading(false);
         Swal.fire({
           title: "Oops!",
           text: "Something when wrong",
@@ -131,8 +225,10 @@ function SignUp({ showLogin }: AppProps) {
       });
   };
 
+
   return (
     <form className={!showLogin ? "signup-form" : ""} onSubmit={handleSumit}>
+      {loading && <LoadingScreen />}
       <div className="input-control">
         <TextField
           error={showErrorMessage.firstName}
@@ -143,7 +239,7 @@ function SignUp({ showLogin }: AppProps) {
           name="firstName"
           type="text"
           onChange={handleOnchange}
-          defaultValue={useData.email}
+          defaultValue={useData.firstName}
           onBlur={handleError}
           helperText={showErrorMessage.firstName && errorMessage.firstName}
           variant="standard"
@@ -236,7 +332,9 @@ function SignUp({ showLogin }: AppProps) {
           <input type="checkbox" name="accept" id="accept" />
           <label htmlFor="accept">Remember Me</label>
         </div>
-        <a href="#" className="forgot">Forgot Password?</a>
+        <a href="#" className="forgot">
+          Forgot Password?
+        </a>
       </div>
 
       <Button variant="contained" fullWidth type="submit">
@@ -245,15 +343,15 @@ function SignUp({ showLogin }: AppProps) {
       <div className="or">OR SIGN UP USING</div>
 
       <div className="icon-section">
-        <Button className="icon-container" onClick={() => fireBaseAuth(true)}>
+        <div className="icon-container" onClick={() => fireBaseAuth(true, setLoading)}>
           <img src={Google} alt="Google" className="icon" />
-        </Button>
-        <Button className="icon-container">
+        </div>
+        <div className="icon-container">
           <img src={Linkedin} alt="Google" className="icon" />
-        </Button>
-        <Button className="icon-container" onClick={() => fireBaseAuth(false)}>
+        </div>
+        <div className="icon-container" onClick={() => fireBaseAuth(false, setLoading)}>
           <img src={Microsoft} alt="Google" className="icon" />
-        </Button>
+        </div>
       </div>
     </form>
   );
